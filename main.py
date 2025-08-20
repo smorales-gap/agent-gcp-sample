@@ -76,21 +76,30 @@ def agent():
     """Main endpoint for the LLM agent that handles tool-calling."""
     try:
         user_prompt = request.json.get("prompt")
-        response = model.generate_content(user_prompt, tools=[execute_sql_tool])
 
-        if response.candidates[0].content.parts[0].function_call:
-            function_call = response.candidates[0].content.parts[0].function_call
-            tool_name = function_call.name
-            tool_args = function_call.args
-            
-            if tool_name == "execute_sql_query":
-                tool_output_string = execute_sql_query(tool_args["query"])
-                response_with_tool_output = model.generate_content([user_prompt, tool_output_string])
-                return jsonify({"response": response_with_tool_output.text})
+        history = [user_prompt]
+        while True:
+            # Generate content with the current history and available tools
+            response = model.generate_content(history, tools=[execute_sql_tool])
+
+            # Check if the model wants to call a function
+            if response.candidates[0].content.parts[0].function_call:
+                function_call = response.candidates[0].content.parts[0].function_call
+                tool_name = function_call.name
+                tool_args = function_call.args
+
+                # Add the function call to the conversation history
+                history.append(response.candidates[0].content.parts[0])
+
+                if tool_name == "execute_sql_query":
+                    tool_output = execute_sql_query(tool_args["query"])
+                    # Add the tool output to the history as a new Part
+                    history.append(Part.from_tool_response(tool_output))
+                else:
+                    return jsonify({"error": "LLM attempted to call an unknown tool."})
             else:
-                return jsonify({"error": "LLM attempted to call an unknown tool."})
-        else:
-            return jsonify({"response": response.text})
+                # The model has returned a final text response. Break the loop.
+                return jsonify({"response": response.text})
 
     except Exception as e:
         app.logger.error(f"Error: {e}")
@@ -99,6 +108,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
