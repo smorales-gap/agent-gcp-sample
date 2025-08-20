@@ -1,0 +1,5 @@
+Flask
+gunicorn
+sqlalchemy
+google-cloud-aiplatform
+psycopg2-binary  # or mysql-connector-python for MySQL
