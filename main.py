@@ -84,7 +84,7 @@ def agent():
 
         while True:
             # Generate content with the current history and available tools
-            response = model.generate_content(history, tools=[execute_sql_query])
+            response = model.generate_content(history, tools=["execute_sql_query"])
 
             # Check if the model wants to call a function
             if response.candidates[0].content.parts[0].function_call:
@@ -112,6 +112,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
