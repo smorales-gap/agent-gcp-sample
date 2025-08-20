@@ -2,6 +2,7 @@
 import os
 import json
 import sqlalchemy
+from decimal import Decimal
 from flask import Flask, request, jsonify
 from google.cloud import aiplatform
 from vertexai.generative_models import GenerativeModel, Tool, FunctionDeclaration
@@ -31,6 +32,12 @@ aiplatform.init(project=project_id, location=location)
 model = GenerativeModel("gemini-2.5-flash")
 
 # --- Agent Tool Definitions ---
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
+
 def execute_sql_query(query: str):
     """Executes a read-only SQL query against the database and returns the results as a JSON string."""
     try:
@@ -38,7 +45,7 @@ def execute_sql_query(query: str):
             app.logger.info(f"Executing SQL query: {query}")
             result = conn.execute(sqlalchemy.text(query))
             rows = [dict(row._mapping) for row in result.fetchall()]
-            return json.dumps(rows)
+            return json.dumps(rows, cls=DecimalEncoder)
     except Exception as e:
         app.logger.error(f"SQL execution error: {e}")
         return f"Error executing query: {e}"
@@ -92,6 +99,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
