@@ -2,5 +2,5 @@ Flask
 gunicorn
 sqlalchemy
 google-cloud-aiplatform
-google-cloud-vertexai
 psycopg2-binary  # or mysql-connector-python for MySQL
+
