@@ -18,13 +18,7 @@ db_host = os.environ.get("INSTANCE_CONNECTION_NAME")
 
 # Create a database engine using a unix socket connection
 engine = sqlalchemy.create_engine(
-    sqlalchemy.engine.url.URL.create(
-        drivername="postgresql+psycopg2", 
-        username=db_user,
-        password=db_pass,
-        database=db_name,
-        query={"unix_sock": f"/cloudsql/{db_host}/.s.PGSQL.5432"}
-    )
+    f"postgresql+psycopg2://{db_user}:{db_pass}@/{db_name}?host=/cloudsql/{db_host}"
 )
 
 # --- Vertex AI configuration ---
@@ -98,6 +92,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
