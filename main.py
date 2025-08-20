@@ -84,7 +84,7 @@ def agent():
             
             if tool_name == "execute_sql_query":
                 tool_output_string = execute_sql_query(tool_args["query"])
-                response_with_tool_output = model.generate_content([user_prompt, tool_output_string])
+                response_with_tool_output = model.generate_content([user_prompt, tool_output_string], tools=[execute_sql_tool])
                 return jsonify({"response": response_with_tool_output.text})
             else:
                 return jsonify({"error": "LLM attempted to call an unknown tool."})
