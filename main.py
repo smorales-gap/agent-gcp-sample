@@ -5,7 +5,7 @@ import sqlalchemy
 from decimal import Decimal
 from flask import Flask, request, jsonify
 from google.cloud import aiplatform
-from vertexai.generative_models import GenerativeModel, Tool, FunctionDeclaration, Part
+from vertexai.generative_models import GenerativeModel, Tool, FunctionDeclaration, Part, FunctionResponse
 
 # --- Initialize Flask app ---
 app = Flask(__name__)
@@ -73,29 +73,32 @@ execute_sql_tool = Tool(
 # --- Flask Endpoint for the Agent ---
 @app.route("/agent", methods=["POST"])
 def agent():
-    """Main endpoint for the LLM agent that handles tool-calling."""
+    """Main endpoint for the LLM agent that handles multi-step tool-calling."""
     try:
         user_prompt = request.json.get("prompt")
+        if not user_prompt:
+            return jsonify({"error": "Prompt must not be empty."}), 400
 
-        history = [user_prompt]
+        # Create a conversation history to handle multi-turn conversations with the model
+        history = [Part.from_text(user_prompt)]
+
         while True:
             # Generate content with the current history and available tools
-            response = model.generate_content(history, tools=[execute_sql_tool])
+            response = model.generate_content(history, tools=[tools])
 
             # Check if the model wants to call a function
             if response.candidates[0].content.parts[0].function_call:
                 function_call = response.candidates[0].content.parts[0].function_call
                 tool_name = function_call.name
                 tool_args = function_call.args
-
-                # Add the function call to the conversation history
+                
+                # Append the function call to the history
                 history.append(response.candidates[0].content.parts[0])
 
                 if tool_name == "execute_sql_query":
                     tool_output = execute_sql_query(tool_args["query"])
-                    # Add the tool output to the history as a new Part
-                    parsed_output = {"result": json.loads(tool_output)}
-                    history.append(Part.from_function_response(name=tool_name, response=parsed_output))
+                    parsed_output = json.loads(tool_output)
+                    history.append(Part.from_function_response(name=tool_name, response={"result": parsed_output}))
                 else:
                     return jsonify({"error": "LLM attempted to call an unknown tool."})
             else:
@@ -109,6 +112,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
