@@ -34,7 +34,7 @@ location = os.environ.get("GCP_LOCATION", "us-central1")
 aiplatform.init(project=project_id, location=location)
 
 # Initialize the Gemini model with tool-calling capabilities
-model = GenerativeModel("gemini-1.5-flash-preview-05-20")
+model = GenerativeModel("gemini-1.5-flash-001")
 
 # --- Agent Tool Definitions ---
 def execute_sql_query(query: str):
@@ -98,6 +98,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
