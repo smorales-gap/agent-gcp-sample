@@ -94,7 +94,8 @@ def agent():
                 if tool_name == "execute_sql_query":
                     tool_output = execute_sql_query(tool_args["query"])
                     # Add the tool output to the history as a new Part
-                    history.append(Part.from_function_response(name=tool_name, response=tool_output))
+                    parsed_output = json.loads(tool_output) 
+                    history.append(Part.from_function_response(name=tool_name, response=parsed_output))
                 else:
                     return jsonify({"error": "LLM attempted to call an unknown tool."})
             else:
@@ -108,6 +109,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
