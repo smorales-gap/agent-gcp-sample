@@ -4,7 +4,7 @@ import json
 import sqlalchemy
 from flask import Flask, request, jsonify
 from google.cloud import aiplatform
-from google.cloud.aiplatform.generative_models import (
+from google.cloud.aiplatform import (
     GenerativeModel,
     Tool,
     FunctionDeclaration,
@@ -101,4 +101,5 @@ def agent():
         return jsonify({"error": "An internal error occurred."}), 500
 
 if __name__ == "__main__":
+
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
