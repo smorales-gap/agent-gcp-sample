@@ -127,8 +127,11 @@ def agent():
             # This is the correct way to provide tool results back to the model.
             history.append(Content(role="user", parts=function_response_parts))
 
-        # If the loop finishes without returning, it means the conversation is too long.
-        return jsonify({"response": "The conversation has reached its maximum length."})
+        serializable_history = [h.to_dict() for h in history]
+        return jsonify({
+            "response": "The conversation has reached its maximum length.",
+            "history": serializable_history
+        })
 
     except Exception as e:
         app.logger.error(f"Error: {e}")
@@ -137,6 +140,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
