@@ -5,7 +5,7 @@ import sqlalchemy
 from decimal import Decimal
 from flask import Flask, request, jsonify
 from google.cloud import aiplatform
-from vertexai.generative_models import GenerativeModel, Tool, FunctionDeclaration, Part
+from vertexai.generative_models import GenerativeModel, Tool, FunctionDeclaration, Part, ToolResponse
 
 # --- Initialize Flask app ---
 app = Flask(__name__)
@@ -94,7 +94,7 @@ def agent():
                 if tool_name == "execute_sql_query":
                     tool_output = execute_sql_query(tool_args["query"])
                     # Add the tool output to the history as a new Part
-                    history.append(Part.from_tool_response(tool_output))
+                    history.append(ToolResponse(response=tool_output))
                 else:
                     return jsonify({"error": "LLM attempted to call an unknown tool."})
             else:
@@ -108,6 +108,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
