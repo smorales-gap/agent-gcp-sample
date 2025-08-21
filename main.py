@@ -55,7 +55,7 @@ execute_sql_tool = Tool(
     function_declarations=[
         FunctionDeclaration(
             name="execute_sql_query",
-            description="Executes a read-only SQL query against a products database and returns the results. Use this tool when the user asks for specific product information, like names, categories, or prices. Do not perform any write operations (e.g., INSERT, UPDATE, DELETE). The table schema is products(product_id INT, product_name VARCHAR, category VARCHAR, price DECIMAL).",
+            description="Executes a read-only SQL query against the connected database and returns the results. Use this tool when the user asks for specific information on the database.",
             parameters={
                 "type":"object",
                 "properties":{
@@ -141,6 +141,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
