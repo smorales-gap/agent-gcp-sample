@@ -95,7 +95,8 @@ def agent():
             # Check if the model's response contains function calls.
             if not candidate.content.parts or not candidate.content.parts[0].function_call:
                 # This is the final text response. Break the loop and return.
-                return jsonify({"response": candidate.text})
+                serializable_history = [h.to_dict() for h in history]
+                return jsonify({"response": candidate.text, "chat_history": serializable_history})
 
             # --- Process Function Calls ---
             function_response_parts = []
@@ -110,9 +111,7 @@ def agent():
                         
                         try:
                             parsed_output = json.loads(tool_output)
-                            serializable_history = [h.to_dict() for h in history]
-                            response_data = {"result": parsed_output,
-                                             "chat_history": serializable_history}
+                            response_data = {"result": parsed_output}
                         except (json.JSONDecodeError, TypeError):
                             response_data = {"result": tool_output}
 
