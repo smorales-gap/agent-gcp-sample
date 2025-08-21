@@ -110,7 +110,9 @@ def agent():
                         
                         try:
                             parsed_output = json.loads(tool_output)
-                            response_data = {"result": parsed_output}
+                            serializable_history = [h.to_dict() for h in history]
+                            response_data = {"result": parsed_output,
+                                             "chat_history": serializable_history}
                         except (json.JSONDecodeError, TypeError):
                             response_data = {"result": tool_output}
 
@@ -130,7 +132,7 @@ def agent():
         serializable_history = [h.to_dict() for h in history]
         return jsonify({
             "response": "The conversation has reached its maximum length.",
-            "history": serializable_history
+            "chat_history": serializable_history
         })
 
     except Exception as e:
@@ -140,6 +142,7 @@ def agent():
 if __name__ == "__main__":
 
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
 
 
